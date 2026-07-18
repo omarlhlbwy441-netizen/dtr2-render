@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: dtr2-render
+    runtime: docker
+    plan: standard
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: dtr2-render-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: dtr2-render-redis
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ENVIRONMENT
+        value: production
+      - key: PORT
+        value: 3000
+
+  - type: redis
+    name: dtr2-render-redis
+    plan: free
+    ipAllowList: []
+
+databases:
+  - name: dtr2-render-db
+    plan: free
+    postgresMajorVersion: 15

@@ -1,0 +1,104 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  password      String?
+  role          Role      @default(USER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  servers       Server[]
+  payments      Payment[]
+  templates     Template[]
+
+  @@map("users")
+}
+
+model Server {
+  id          String   @id @default(cuid())
+  name        String
+  type        ServerType
+  status      ServerStatus @default(PENDING)
+  ip          String?
+  port        Int?
+  config      Json?
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("servers")
+}
+
+model Template {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  type        TemplateType
+  config      Json
+  price       Float    @default(0)
+  isPublic    Boolean  @default(false)
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("templates")
+}
+
+model Payment {
+  id          String   @id @default(cuid())
+  amount      Float
+  currency    String   @default("USD")
+  status      PaymentStatus @default(PENDING)
+  stripeId    String?
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("payments")
+}
+
+enum Role {
+  USER
+  ADMIN
+  MODERATOR
+}
+
+enum ServerType {
+  NODEJS
+  PYTHON
+  DOCKER
+  STATIC
+}
+
+enum ServerStatus {
+  PENDING
+  BUILDING
+  RUNNING
+  STOPPED
+  ERROR
+}
+
+enum TemplateType {
+  NODEJS_PM2
+  PYTHON_FASTAPI
+  DOCKER_COMPOSE
+  STATIC_SITE
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
