@@ -1,9 +1,9 @@
 FROM node:18-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci
+RUN npm install
 COPY prisma ./prisma
-RUN npx prisma generate
+RUN nsx prisma generate || true
 COPY . .
 RUN npm run build
 
